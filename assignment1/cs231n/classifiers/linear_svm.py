@@ -27,22 +27,43 @@ def svm_loss_naive(W, X, y, reg):
     num_classes = W.shape[1]
     num_train = X.shape[0]
     loss = 0.0
+    # for each training image
     for i in range(num_train):
-        scores = X[i].dot(W)
+        
+        # scores is W*image
+        # returns 10 scores, 1 for each class, for this given image we're on
+        scores = X[i].dot(W)      
+        
+        # this is grabbing the score of the correct class for referene 
         correct_class_score = scores[y[i]]
+        
+        # so working with a vector that is one score per class
         for j in range(num_classes):
+            # if the class is correct, skip cause no loss
             if j == y[i]:
                 continue
+            
+            # this is the SVM loss
             margin = scores[j] - correct_class_score + 1 # note delta = 1
+            
+            # this is the max(0,-)
             if margin > 0:
                 loss += margin
+            
+                # from https://cs231n.github.io/optimization-1/
+                # where the margin >0 the derivative = sum(x)
+                # also noticing that the sign varies by if the class is correct
+                dW[:, y[i]] -= X[i]
+                dW[:, j] += X[i]
 
     # Right now the loss is a sum over all training examples, but we want it
     # to be an average instead so we divide by num_train.
     loss /= num_train
+    dW /= num_train
 
     # Add regularization to the loss.
     loss += reg * np.sum(W * W)
+    dW += reg * 2 * W
 
     #############################################################################
     # TODO:                                                                     #
@@ -54,8 +75,7 @@ def svm_loss_naive(W, X, y, reg):
     #############################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    pass
-
+    # pass
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     
     return loss, dW
@@ -77,9 +97,32 @@ def svm_loss_vectorized(W, X, y, reg):
     # result in loss.                                                           #
     #############################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-
-    pass
-
+    
+    num_train = X.shape[0]
+    
+    # so now this should be 500 x 10, 
+    # that is for each image we have 10 class predictions
+    scores = X.dot(W)
+    
+    # this needs to be a vector of 500 x 1, the score for the correct class for each image
+    correct_class_score = scores[np.arange(num_train), y].reshape(num_train,1)
+    
+    # vectorized max
+    margin = np.maximum(scores - correct_class_score + 1,0)
+    
+    # loss where class is correct --> 0
+    margin[np.arange(num_train),y] = 0
+    
+    # sum margin = loss
+    loss = margin.sum()  
+    
+    # make an average
+    loss /= num_train
+    
+    # add on regularization
+    loss += reg * np.sum(W * W)
+    
+    # pass
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
     #############################################################################
