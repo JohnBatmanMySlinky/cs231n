@@ -99,6 +99,7 @@ def svm_loss_vectorized(W, X, y, reg):
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     
     num_train = X.shape[0]
+    num_classes = W.shape[1]
     
     # so now this should be 500 x 10, 
     # that is for each image we have 10 class predictions
@@ -110,7 +111,7 @@ def svm_loss_vectorized(W, X, y, reg):
     # vectorized max
     margin = np.maximum(scores - correct_class_score + 1,0)
     
-    # loss where class is correct --> 0
+    # loss and dW where class is correct --> 0
     margin[np.arange(num_train),y] = 0
     
     # sum margin = loss
@@ -135,9 +136,18 @@ def svm_loss_vectorized(W, X, y, reg):
     # loss.                                                                     #
     #############################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
+    
+    # margin but with indicator function
+    margin_ind = margin
+    margin_ind[margin_ind > 0] = 1
+    
+    margin_ind_sum = np.sum(margin_ind, axis = 1)
+    margin_ind[np.arange(num_train),y] -= margin_ind_sum
+    
+    dW = (X.T).dot(margin_ind) / num_train + reg * 2 * W
 
-    pass
-
+    
+    # pass
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
     return loss, dW
