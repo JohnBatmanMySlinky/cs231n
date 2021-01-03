@@ -32,9 +32,36 @@ def softmax_loss_naive(W, X, y, reg):
     # regularization!                                                           #
     #############################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
+    num_train = X.shape[0]
+    num_classes = W.shape[1]
 
-    pass
-
+    for i in range(num_train):
+        # calculate scores
+        scores = X[i].dot(W)
+        
+        # shift to avoid numerical instability then exponentiate
+        scores -= np.max(scores)
+        scores = np.exp(scores)
+        
+        # only care about loss on the correct class. so no double loop here
+        # Li = -log(e^fi/SUM(e^fj))
+        loss -= np.log(scores[y[i]] / np.sum(scores))
+            
+        # dW requires inner loop
+        # dWj = x * softmax
+        # dwyi = x * (softmax-1)
+        for j in range(num_classes):
+            dW[:,j] += X[i] * scores[j] / np.sum(scores)
+            if j == y[i]:
+                dW[:,j] -= X[i]
+    
+    loss /= num_train
+    dW /= num_train
+    
+    loss += reg * np.sum(W*W)
+    dW += reg * 2 * W        
+    
+    # pass
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
     return loss, dW
@@ -57,9 +84,25 @@ def softmax_loss_vectorized(W, X, y, reg):
     # regularization!                                                           #
     #############################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
+    num_train = X.shape[0]
+    num_classes = W.shape[1]
+    
+    scores = X.dot(W)
+    scores -= np.max(scores, axis=1).reshape(num_train,1)
+    scores = np.exp(scores)
+    softmax = scores/np.sum(scores, axis = 1).reshape(num_train,1)
+    loss = -np.sum(np.log(softmax[np.arange(num_train),y]))
+    
+    softmax[np.arange(num_train),y] -= 1
+    dW = X.T.dot(softmax)
 
-    pass
-
+    
+    loss /= num_train
+    dW /= num_train
+    
+    loss += reg * np.sum(W*W)
+    dW += reg * 2 * W  
+    # pass
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
     return loss, dW
