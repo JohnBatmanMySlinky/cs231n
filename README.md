@@ -2,6 +2,7 @@ Stanford CS231n Fall 2016
 
 Resources
 * [Lectures on Youtube](https://www.youtube.com/playlist?list=PLkt2uSq6rBVctENoVBg1TpCC7OQi31AlC)
+* [Slides](http://cs231n.stanford.edu/slides/)
 * [Assignments & Lecture Notes](https://cs231n.github.io)
 
 Assignment 1:
